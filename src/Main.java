@@ -1,47 +1,41 @@
 import entity.Department;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Main {
 
     public static void main(String[] args) {
-        List departmentList = new ArrayList<>();
-        departmentList.add(new Department(1, "研发部门", 0));
-        departmentList.add(new Department(2, "研发团队1", 1));
-        departmentList.add(new Department(3, "研发团队2", 1));
-        departmentList.add(new Department(4, "财务部门", 0));
-        departmentList.add(new Department(5, "财务A部门", 4));
-        departmentList.add(new Department(6, "财务B部门", 4));
-        departmentList.add(new Department(7, "财务A部门团队1", 5));
-        departmentList.add(new Department(8, "财务A部门团队2", 5));
-        departmentList.add(new Department(9, "财务B部门团队1", 6));
-        departmentList.add(new Department(10, "财务B部门团队2", 6));
+        List<Department> departmentList = new ArrayList<>();
+        departmentList.add(new Department(1L, "研发部门", null));
+        departmentList.add(new Department(2L, "研发团队1", 1L));
+        departmentList.add(new Department(3L, "研发团队2", 1L));
+        departmentList.add(new Department(4L, "财务部门", null));
+        departmentList.add(new Department(5L, "财务A部门", 4L));
+        departmentList.add(new Department(6L, "财务B部门", 4L));
+        departmentList.add(new Department(7L, "财务A部门团队1", 5L));
+        departmentList.add(new Department(8L, "财务A部门团队2", 5L));
+        departmentList.add(new Department(9L, "财务B部门团队1", 6L));
+        departmentList.add(new Department(10L, "财务B部门团队2", 6L));
 
-        List<Department> three = getThree(departmentList, 0L);
+       List<Department> rootNodes = departmentList.stream()
+           .filter(department-> Objects.isNull(department.getParentId()))
+           .collect(Collectors.toList());
 
-        for(Department item:three) {
-            System.out.println(item);
-        }
+       rootNodes.forEach(item-> getDepartmentTree(departmentList,item));
+       System.out.println(rootNodes);
     }
 
-    private static List<Department> getThree(List<Department> list,Long parentId){
-        //获取所有子节点
-        List<Department> childTreeList = getChildTree(list,parentId);
-        for (Department dept:childTreeList) {
-            dept.setChildDepartments(getThree(list,dept.getId()));
-        }
-        return childTreeList;
-    }
+    private static void getDepartmentTree(List<Department> list,Department currentNode){
+       List<Department> childDepartments = list.stream()
+           .filter(department -> currentNode.getId().equals(department.getParentId()))
+           .collect(Collectors.toList());
+        currentNode.setChildDepartments(childDepartments);
 
-    private static List<Department> getChildTree(List<Department> list,Long id){
-        List<Department> childTree = new ArrayList<>();
-
-        for (Department dept:list) {
-            if(dept.getParentId() == id){
-                childTree.add(dept);
-            }
+        for (Department dept:childDepartments) {
+            getDepartmentTree(list,dept);
         }
-        return childTree;
     }
 }
